@@ -40,7 +40,6 @@ Keep responses under 2 sentences because they will be spoken aloud.
     console.error(error);
 
     return "I'm sorry, I am having trouble accessing the system right now.";
-
   }
 }
 
