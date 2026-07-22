@@ -1,35 +1,21 @@
-exports.handler = async function(context, event, callback) {
-    const twiml = new Twilio.twiml.VoiceResponse();
+const express = require("express");
+const router = express.Router();
+const twilio = require("twilio");
 
-    console.log("Incoming call:", JSON.stringify(event, null, 2));
+router.post("/", (req, res) => {
 
-    // Check if AI requested a transfer
-    if (event.Memory) {
-        try {
-            const mem = JSON.parse(event.Memory);
+  const twiml = new twilio.twiml.VoiceResponse();
 
-            if (mem.tool === "transfer_to_budtender") {
-                console.log("AI requested transfer");
+  const connect = twiml.connect();
 
-                twiml.redirect(
-                    `https://${context.DOMAIN}/voice-handoff`
-                );
+  connect.stream({
+    url: `wss://${process.env.DOMAIN}/voice-stream`,
+    track: "both"
+  });
 
-                return callback(null, twiml);
-            }
+  res.type("text/xml");
+  res.send(twiml.toString());
 
-        } catch (err) {
-            console.log("Memory parse error:", err);
-        }
-    }
+});
 
-    // Open media stream to Render backend
-    const connect = twiml.connect();
-
-    connect.stream({
-        url: `wss://${context.DOMAIN}/voice-stream`,
-        track: "both"
-    });
-
-    return callback(null, twiml);
-};
+module.exports = router;
